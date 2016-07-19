@@ -1,0 +1,351 @@
+Taller Django
+=============
+
+Mi Biblioteca Digital desde 0
+=============================
+*****************************
+=============================
+
+Para crear un proyecto Django es muy recomendable utilizar un ambiente virtual, esto
+es una característica especial que nos permitirá trabajar en forma aislada con versiones
+o modificaciones propias de los distintos programas o librerías que utilicemos.
+
+Las características a instalar son
+
+- virtualenv: genera ambiente virtual
+- virtualenvwrapper: facilita comandos para activar o desactivar el ambiente virtual
+
+Links recomendados:
+
+- http://docs.python-guide.org/en/latest/dev/virtualenvs/
+- https://pypi.python.org/pypi/virtualenv
+- https://virtualenvwrapper.readthedocs.org/en/latest/
+
+Condiciones:
+===========
+
+En la terminal de gnu-linux
+
+Instalar
+********
+
+apt-get install python3-dev
+apt-get install python3-pip
+
+Procedimiento 
+*************
+
+pip3 install virtualenv
+pip3 install virtualenvwrapper
+
+Añadir a archivo .profile o .bash_rc 
+
+<code>
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/Proyectos
+export VIRTUALENV_PYTHON=/usr/bin/python3
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+source /usr/local/bin/virtualenvwrapper.sh
+<code>
+
+Activar virtualenv
+==================
+
+source .profile
+o
+source .bash_rc
+
+Crear ambiente virtual para proyecto
+====================================
+
+mkvirtualenv biblioteca
+
+Acceder a a AV
+=============
+
+workon biblioteca
+
+Salir de AV
+===========
+
+deactivate 
+
+Archivos importantes
+====================
+
+Estos archivos se ejecutan al activar el AV y permiten activar variables de ambiente 
+adicionales, como claves secretas y valores importantes para el funcionamiento del sistema.
+
+/home/usuario/.virtualenvs/biblioteca/bin/predeactivate
+/home/usuario/.virtualenvs/biblioteca/bin/postdeactivate
+/home/usuario/.virtualenvs/biblioteca/bin/preactivate
+/home/usuario/.virtualenvs/biblioteca/bin/postactivate
+/home/usuario/.virtualenvs/biblioteca/bin/get_env_details
+
+Proyecto Django
+===============
+
+workon biblioteca
+
+pip install django
+pip install --upgrade pip
+
+
+crear carpeta para el proyecto:
+******************************
+
+mkdir -p ~Proyectos/Biblioteca
+
+Inicializa proyecto Django:
+***************************
+
+django-admin.py startproject biblioteca
+
+deberías tener esta estructura de archivos y carpetas:
+(ejecuta 'tree')
+
+└── biblioteca
+    ├── biblioteca
+    │   ├── __init__.py
+    │   ├── settings.py
+    │   ├── urls.py
+    │   └── wsgi.py
+    └── manage.py 
+
+crea las siguientes carpetas:
+
+mkdir apps
+mkdir -p files/static
+mkdir -p files/media
+mkdir -p files/templates
+
+En la carpeta interna 'biblioteca' (al mismo nivel que manage.py)
+crea la carpeta settings y renombra settings.py a settings/base.py
+
+mkdir -p biblioteca/settings
+cd biblioteca
+mv settings.py settings/base.py
+
+Deberías tener ahora esta estructura:
+
+.
+├── apps
+├── biblioteca
+│   ├── __init__.py
+│   ├── settings
+│   │   └── base.py
+│   ├── urls.py
+│   └── wsgi.py
+├── files
+│   ├── media
+│   ├── static
+│   └── templates
+└── manage.py
+
+Resguardar datos de proyecto a *bin/postactivate
+************************************************
+
+Copiar SECRET_KEY de base.py:
+
+export SECRET_KEY='<llave secreta propia>'
+export DJANGO_SETTINGS_MODULE="biblioteca.settings.development"
+
+Para database postgre o mysql:
+export DATABASE_NAME=mi_biblioteca
+export DATABASE_USER=dev
+export DATABASE_PASSWORD=dev-locale
+
+En base.py cambiar:
+*******************
+
+<code>
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+</code>
+
+a
+<code>
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+</code>
+
+Cambiar la SECRET_KEY a una llamada a variable de ambiente.
+
+<code>
+SECRET_KEY = '<llave secreta propia>'
+</code>
+
+A:
+
+<code>
+from django.core.exceptions import ImproperlyConfigured
+
+def get_env_variable(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        error_msg = "Set the %s environment variable" % var_name
+        raise ImproperlyConfigured(error_msg)
+
+SECRET_KEY = get_env_variable('SECRET_KEY')
+</code>
+
+Agregar carpetas y rutas de configuracion de statics y media:
+*************************************************************
+
+<code>
+FILES_DIR = os.path.join(BASE_DIR,'files')
+
+STATIC_URL = '/static/'
+
+MEDIA_URL = '/media/'
+
+PROJECTS_DIR = os.path.join('apps')
+
+STATICFILES_DIRS = [
+   FILES_DIR,
+   os.path.join(PROJECTS_DIR, "app1/static/"),
+   os.path.join(PROJECTS_DIR, "app2/static/"),
+   os.path.join(PROJECTS_DIR, "app3/static/"),
+   os.path.join(PROJECTS_DIR, "app4/static/"),
+   os.path.join(PROJECTS_DIR, "app5/static/"),
+]
+
+COMPRESS_ENABLED=True
+
+STATICFILES_FINDER=[
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'djangobower.finders.BowerFinder',
+    'compressor.finders.CompressorFinder',
+]
+
+STATIC_ROOT = os.path.join(FILES_DIR, "static")
+
+MEDIA_ROOT = os.path.join(FILES_DIR, "media")
+</code>
+
+Crear archivo development y production:
+**************************************
+
+Con el contenido:
+
+develepoment.py
+
+<code>
+# -*- coding: utf-8 -*-
+from .base import *
+
+ALLOWED_HOSTS = ['*']
+
+DEBUG = True
+
+</code>
+
+production.py
+
+<code>
+# -*- coding: utf-8 -*-
+from .base import *
+
+ALLOWED_HOSTS = ['mi_bilioteca.cl']
+
+DEBUG = False
+</code>
+
+Salir y entrar al ambiente:
+**************************
+
+deactivate
+workon biblioteca
+
+Recolectar los archivos statics
+*******************************
+
+./manage.py collectstatic
+
+Correr servidor de desarrollo
+*****************************
+
+./manage.py runserver
+
+
+Si todo funciona ok
+********************
+
+Ir a ~Proyectos/Biblioteca
+
+Listar los modulos instalados de Python y registrar en un archivo txt:
+
+pip freeze > requirements.txt
+
+Iniciar proyecto git
+
+git init
+
+Agregar a .gitignore (recomendación para Django)
+
+<code>
+
+  GNU nano 2.2.6                                           File: .gitignore                                                                                             
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+*migrations/*
+
+!__init__.py
+
+*node_modules/*
+
+
+</code>
+
+git add . --all
+gir commit -m "Iniciando Mi Biblioteca en Django" 
+
+
+CREACIÓN DE UNA APP
+===================
+
+Dentro de la carpeta 'apps' ejecuta el siguiente comando
+
+../manage.py startapp registro_libros
+
+La estructura del proyecto debería ser (solo directorios 'tree -d'):
+
+.
+├── apps
+│   └── registro_libros
+│       └── migrations
+├── biblioteca
+│   ├── __pycache__
+│   └── settings
+│       └── __pycache__
+└── files
+    ├── media
+    ├── static
+    │   └── admin
+    │       ├── css
+    │       ├── fonts
+    │       ├── img
+    │       │   └── gis
+    │       └── js
+    │           ├── admin
+    │           └── vendor
+    │               ├── jquery
+    │               └── xregexp
+    └── templates
+
+
+Con esto, nos enfocaremos en 
+
+1.- añadir nueva app al registro de settings
+2.- añadir urls de app al registro de urls
+[seguir el método de desarrollo de app Django]
+3.- modelos Libro-Autor
+4.- Añadir a admin (crear superuser en terminal)
+5.- Crear formulario
+6.- CRUD Libro y Autor
+7.- GIT del proyecto
+
+

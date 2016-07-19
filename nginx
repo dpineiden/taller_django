@@ -1,0 +1,37 @@
+upstream django {
+  # fail_timeout=0 means we always retry an upstream even if it failed
+  # to return a good HTTP response (in case the Unicorn master nukes a
+  # single worker for timing out).
+
+ server unix:///home/project/socks/project.sock;
+}
+
+server {
+       	listen 80 default;
+
+      	server_name www.project.cl project.cl;
+	charset utf-8;
+	
+	client_max_body_size 100M;
+	uwsgi_read_timeout 600;
+	proxy_read_timeout 60s;	
+	#logs
+	access_log /home/project/logs/access.log;
+	error_log /home/project/logs/error.log;
+
+    # Django statics
+
+    location /static {
+        alias /home/project/sitio_project/project/files/static; # your Django project's static files - amend as required
+    }
+
+    location /media {
+        alias /home/project/sitio_project/project/files/media; # your Django project's st$
+    }
+
+
+    location / {
+        uwsgi_pass  django;
+        include     /home/project/sitio_project/web/uwsgi_params; # the uwsgi_params file you installed
+    }
+}
