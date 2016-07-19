@@ -15,7 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r"
-   sodipodi:docname="bash.svg">
+   sodipodi:docname="bash.svg"
+   inkscape:export-filename="/home/david/Documents/Taller Django/bash.png"
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200">
   <defs
      id="defs4">
     <marker
@@ -154,7 +157,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="-11.312493"
+     inkscape:cx="-19.393713"
      inkscape:cy="173.76839"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
